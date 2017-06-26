@@ -1,6 +1,6 @@
 --- ../src-base/minecraft/net/minecraft/world/biome/BiomeProvider.java
 +++ ../src-work/minecraft/net/minecraft/world/biome/BiomeProvider.java
-@@ -22,11 +22,12 @@
+@@ -22,23 +22,29 @@
      private GenLayer field_76945_e;
      private final BiomeCache field_76942_f;
      private final List<Biome> field_76943_g;
@@ -14,21 +14,33 @@
      }
  
      private BiomeProvider(long p_i45744_1_, WorldType p_i45744_3_, String p_i45744_4_)
-@@ -39,6 +40,7 @@
++    { this(null, p_i45744_1_, p_i45744_3_, p_i45744_4_); }
++    public BiomeProvider(@javax.annotation.Nullable net.minecraft.world.World world, WorldInfo info) // Forge: Added a World argument
++    { this(world, info.func_76063_b(), info.func_76067_t(), info.func_82571_y()); }
++    private BiomeProvider(@javax.annotation.Nullable net.minecraft.world.World world, long seed, WorldType worldTypeIn, String options) // Forge: Added a World argument
+     {
+         this();
+ 
+-        if (p_i45744_3_ == WorldType.field_180271_f && !p_i45744_4_.isEmpty())
++        if (worldTypeIn == WorldType.field_180271_f && !options.isEmpty())
+         {
+-            this.field_190945_a = ChunkGeneratorSettings.Factory.func_177865_a(p_i45744_4_).func_177864_b();
++            this.field_190945_a = ChunkGeneratorSettings.Factory.func_177865_a(options).func_177864_b();
          }
  
-         GenLayer[] agenlayer = GenLayer.func_180781_a(p_i45744_1_, p_i45744_3_, this.field_190945_a);
-+        agenlayer = getModdedBiomeGenerators(p_i45744_3_, p_i45744_1_, agenlayer);
+-        GenLayer[] agenlayer = GenLayer.func_180781_a(p_i45744_1_, p_i45744_3_, this.field_190945_a);
++        GenLayer[] agenlayer = GenLayer.initializeAllBiomeGenerators(world, seed, worldTypeIn, this.field_190945_a);
++        agenlayer = getModdedBiomeGenerators(world, worldTypeIn, seed, agenlayer);
          this.field_76944_d = agenlayer[0];
          this.field_76945_e = agenlayer[1];
      }
-@@ -207,6 +209,13 @@
+@@ -207,6 +213,13 @@
          this.field_76942_f.func_76838_a();
      }
  
-+    public GenLayer[] getModdedBiomeGenerators(WorldType worldType, long seed, GenLayer[] original)
++    public GenLayer[] getModdedBiomeGenerators(@javax.annotation.Nullable net.minecraft.world.World world, WorldType worldType, long seed, GenLayer[] original)
 +    {
-+        net.minecraftforge.event.terraingen.WorldTypeEvent.InitBiomeGens event = new net.minecraftforge.event.terraingen.WorldTypeEvent.InitBiomeGens(worldType, seed, original);
++        net.minecraftforge.event.terraingen.WorldTypeEvent.InitBiomeGens event = new net.minecraftforge.event.terraingen.WorldTypeEvent.InitBiomeGens(world, worldType, seed, original);
 +        net.minecraftforge.common.MinecraftForge.TERRAIN_GEN_BUS.post(event);
 +        return event.getNewBiomeGens();
 +    }
